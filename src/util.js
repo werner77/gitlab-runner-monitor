@@ -1,7 +1,14 @@
 import queryString from 'query-string';
 
 export const getQueryParameter = (name) => {
-  const parsed = queryString.parse(location.search);
+
+  const decodedString = Buffer.from(location.search, 'base64').toString('ascii');
+
+  if (decodedString == null) {
+    return null;
+  }
+
+  const parsed = queryString.parse(decodedString);
 
   if (name in parsed) {
     let parameter = parsed[name];

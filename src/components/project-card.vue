@@ -144,10 +144,12 @@
         for (const pipeline of resolvedPipelines) {
           const jobs = await this.$api(`/projects/${this.$props.projectId}/pipelines/${pipeline.id}/jobs`);
           pipeline.jobs = jobs;
-          if (jobs.find(function(job) {
-            return (job.status == 'failed');
-          }) != null) {
-            pipeline.status = 'warning';
+          if (pipeline.status == 'success') {
+            if (jobs.find(function(job) {
+              return (job.status == 'failed');
+            }) != null) {
+              pipeline.status = 'warning';
+            }
           }
         }
 
