@@ -56,7 +56,8 @@
             this.$props.pipeline.status === 'running' ||
             this.$props.pipeline.status === 'failed' ||
             this.$props.pipeline.status === 'canceled' ||
-            this.$props.pipeline.status === 'success'
+            this.$props.pipeline.status === 'success' ||
+            this.$props.pipeline.status === 'warning'
           );
       },
       showUsers() {
@@ -95,8 +96,9 @@
       }
     },
     methods: {
-      async fetchJobs() {
-        this.$data.jobs = await this.$api(`/projects/${this.$props.project.id}/repository/commits/${this.$props.pipeline.sha}/statuses`);
+      fetchJobs() {
+        //const jobs = await this.$api(`/projects/${this.$props.project.id}/pipelines/${this.$props.pipeline.id}/jobs`);
+        this.$data.jobs = this.$props.pipeline.jobs;
         this.$data.loading = false;
       },
       setupDurationCounter() {

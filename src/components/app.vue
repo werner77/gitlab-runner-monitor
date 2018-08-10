@@ -53,15 +53,21 @@
     methods: {
       async fetchProjects() {
         const fetchCount = getQueryParameter('fetchCount') || 20;
+        const starred = getQueryParameter('starred') || false;
+
         const gitlabApiParams = {
           order_by: 'last_activity_at',
           // GitLab per_page max is 100. We use > 100 values as next page follow trigger
           per_page: fetchCount > 100 ? 100 : fetchCount
         };
 
+        if (starred) {
+          gitlabApiParams.starred = true;
+        }
+
         const visibility = getQueryParameter('projectVisibility') || 'any';
         // Only add the visibility attribute to the params if filtering is required
-        // (if visiblity is not specified, Gitlab will return all projects)
+        // (if visibility is not specified, Gitlab will return all projects)
         if (visibility !== 'any') {
           gitlabApiParams.visibility = visibility;
         }

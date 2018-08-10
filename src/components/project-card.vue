@@ -104,15 +104,24 @@
         this.$data.loading = false;
       },
       async fetchPipelines() {
+
+        const ref = getQueryParameter('ref')
+
         this.$data.loading = true;
 
-        const pipelines = await this.$api(`/projects/${this.$props.projectId}/pipelines`);
+        const allPipelines = await this.$api(`/projects/${this.$props.projectId}/pipelines`);
 
-        const resolvedPipelines = [];
+        const pipelines = allPipelines.filter(function(pipeline) {
+          if (ref != null) {
+            return pipeline.ref == ref;
+          } else {
+            return true;
+          }
+        });
 
-        if (pipelines.length === 0) {
-          this.$data.pipelines = [];
-        } else {
+        var resolvedPipelines = [];
+
+        if (pipelines.length > 0) {
             const filteredPipelines = [];
 
             for (const pipeline of pipelines) {
@@ -128,12 +137,21 @@
 
             if (pipelines.length >= 1 && filteredPipelines.length == 0) {
                 const resolvedPipeline = await this.$api(`/projects/${this.$props.projectId}/pipelines/${pipelines[0].id}`);
-                this.$data.pipelines = [resolvedPipeline];
-            } else {
-                this.$data.pipelines = resolvedPipelines;
+                resolvedPipelines = [resolvedPipeline];
             }
         }
 
+        for (const pipeline of resolvedPipelines) {
+          const jobs = await this.$api(`/projects/${this.$props.projectId}/pipelines/${pipeline.id}/jobs`);
+          pipeline.jobs = jobs;
+          if (jobs.find(function(job) {
+            return (job.status == 'failed');
+          }) != null) {
+            pipeline.status = 'warning';
+          }
+        }
+
+        this.$data.pipelines = resolvedPipelines;
         this.$data.loading = false;
       }
     }
@@ -164,6 +182,10 @@
 
     &.failed {
       background-color: #C62828;
+    }
+
+    &.warning {
+      background-color: #FC9401;
     }
 
     &.canceled {
