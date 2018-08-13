@@ -143,13 +143,23 @@
 
         for (const pipeline of resolvedPipelines) {
           const jobs = await this.$api(`/projects/${this.$props.projectId}/pipelines/${pipeline.id}/jobs`);
-          pipeline.jobs = jobs;
-          if (pipeline.status == 'success') {
-            if (jobs.find(function(job) {
-              return (job.status == 'failed');
-            }) != null) {
-              pipeline.status = 'warning';
+          var handledJobNames = new Set();
+          var hasFailedJob = false;
+          const filteredJobs = jobs.reverse().filter(function(job) {
+            if (handledJobNames.has(job.name)) {
+              return false;
+            } else {
+              handledJobNames.add(job.name);
+              if (job.status == 'failed') {
+                hasFailedJob = true;
+              }
+              return true;
             }
+          }).reverse();
+
+          pipeline.jobs = filteredJobs;
+          if (pipeline.status == 'success' && hasFailedJob) {
+            pipeline.status = 'warning';
           }
         }
 

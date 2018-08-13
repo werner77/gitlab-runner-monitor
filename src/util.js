@@ -2,10 +2,10 @@ import queryString from 'query-string';
 
 export const getQueryParameter = (name) => {
 
-  const decodedString = Buffer.from(location.search, 'base64').toString('ascii');
+  var decodedString = Buffer.from(location.search, 'base64').toString('ascii');
 
   if (decodedString == null) {
-    return null;
+    decodedString = location.search
   }
 
   const parsed = queryString.parse(decodedString);
