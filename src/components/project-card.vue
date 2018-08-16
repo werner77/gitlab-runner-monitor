@@ -125,7 +125,7 @@
             const filteredPipelines = [];
 
             for (const pipeline of pipelines) {
-                if (pipeline.status == 'pending' || pipeline.status == 'running') {
+                if (pipeline.status == 'pending' || pipeline.status == 'running' || getQueryParameter('showAllPipelines')) {
                     filteredPipelines.push(pipeline);
                 }
             }
@@ -135,7 +135,7 @@
               resolvedPipelines.push(resolvedPipeline);
             }
 
-            if (pipelines.length >= 1 && filteredPipelines.length == 0) {
+            if (pipelines.length >= 1 && resolvedPipelines.length == 0) {
                 const resolvedPipeline = await this.$api(`/projects/${this.$props.projectId}/pipelines/${pipelines[0].id}`);
                 resolvedPipelines = [resolvedPipeline];
             }
