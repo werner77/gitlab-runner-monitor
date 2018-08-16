@@ -2,9 +2,12 @@ import queryString from 'query-string';
 
 export const getQueryParameter = (name) => {
 
-  var decodedString = Buffer.from(location.search, 'base64').toString('ascii');
+  const isBase64 = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/.test(location.search);
 
-  if (decodedString == null) {
+  var decodedString = null;
+  if (isBase64) {
+    decodedString = Buffer.from(location.search, 'base64').toString('ascii');
+  } else {
     decodedString = location.search
   }
 
