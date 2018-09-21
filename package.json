@@ -6,7 +6,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --mode development --port 8080 --hot  --host 0.0.0.0 --disableHostCheck",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --mode development --port 8080 --hot  --host 172.25.4.67 --disableHostCheck",
     "build": "cross-env NODE_ENV=production webpack -p --progress --hide-modules"
   },
   "dependencies": {

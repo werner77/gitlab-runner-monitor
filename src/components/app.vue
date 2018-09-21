@@ -1,8 +1,8 @@
 <template>
   <div class="app" @click="autoZoom()">
     <div :style="{zoom}">
-      <div class="projects">
-        <project-card v-for="project in sortedProjects" :key="project.id" :project-id="project.id" v-model="project.last_activity_at" />
+      <div class="runners">
+        <runner-card v-for="runner in sortedRunners" :key="runner.id" :runner="runner" />
       </div>
     </div>
     <div v-if="initialLoading" class="loader">
@@ -14,26 +14,30 @@
 <script>
   import Octicon             from 'vue-octicon/components/Octicon';
   import {getQueryParameter} from '../util';
-  import ProjectCard         from './project-card';
+  import RunnerCard          from './runner-card';
 
   export default {
     components: {
       Octicon,
-      ProjectCard
+      RunnerCard
     },
     name: 'app',
     data: () => ({
-      projects: [],
+      runners: [],
       zoom: 1,
       initialLoading: true
     }),
     computed: {
-      sortedProjects() {
-        return this.$data.projects.sort((a, b) => new Date(b.last_activity_at).getTime() - new Date(a.last_activity_at).getTime());
+      sortedRunners() {
+        return this.$data.runners.sort((a, b) => {
+          if (a.description < b.description) return -1;
+          if (a.description > b.description) return 1;
+          return 0;
+        })
       }
     },
     mounted() {
-      this.fetchProjects();
+      this.fetchRunners();
 
       if (getQueryParameter('autoZoom')) {
         setInterval(() => {
@@ -43,66 +47,24 @@
 
       this.refreshIntervalId = setInterval(async () => {
         if (!this.$data.loading) {
-          await this.fetchProjects();
+          await this.fetchRunners();
         }
-      }, 120000);
+      }, 10000);
     },
     beforeDestroy() {
       clearInterval(this.refreshIntervalId);
     },
     methods: {
-      async fetchProjects() {
-        const fetchCount = getQueryParameter('fetchCount') || 20;
-        const starred = getQueryParameter('starred') || false;
-
+      async fetchRunners() {
         const gitlabApiParams = {
-          order_by: 'last_activity_at',
-          // GitLab per_page max is 100. We use > 100 values as next page follow trigger
-          per_page: fetchCount > 100 ? 100 : fetchCount
+          per_page: 100
         };
 
-        if (starred) {
-          gitlabApiParams.starred = true;
-        }
+        const runners = await this.$api('/runners', gitlabApiParams, {follow_next_page_links: true});
+        const regex = /ios-[0-9]+\.[0-9]/
 
-        const visibility = getQueryParameter('projectVisibility') || 'any';
-        // Only add the visibility attribute to the params if filtering is required
-        // (if visibility is not specified, Gitlab will return all projects)
-        if (visibility !== 'any') {
-          gitlabApiParams.visibility = visibility;
-        }
-
-        const projects = await this.$api('/projects', gitlabApiParams, {follow_next_page_links: fetchCount > 100});
-
-        // Only show projects that have jobs enabled
-        const maxAge = (getQueryParameter('maxAge') !== null ? getQueryParameter('maxAge') : 24 * 7);
-
-        // Only include projects from specific groups
-        let includeGroups = (getQueryParameter('groups') !== null ? getQueryParameter('groups') : '');
-        if (typeof includeGroups === 'string') {
-          includeGroups = includeGroups.split(',');
-        }
-
-        // Only include specific projects
-        let includeProjects = (getQueryParameter('projects') !== null ? getQueryParameter('projects') : '');
-        if (typeof includeProjects === 'string') {
-          includeProjects = includeProjects.split(',');
-        }
-
-        let includePaths = (getQueryParameter('paths') !== null ? getQueryParameter('paths') : '');
-        if (typeof includePaths === 'string') {
-          includePaths = includePaths.split(',');
-        }
-
-        this.$data.projects = projects.filter((project) => {
-          return project.jobs_enabled &&
-            (maxAge === 0 || ((new Date() - new Date(project.last_activity_at)) / 1000 / 60 / 60 <= maxAge)) &&
-            (
-              (includeGroups[0] === '' && includeProjects[0] === '' && includePaths[0] === '') ||
-              (includePaths[0] !== '' && includePaths.some((path) => project.path_with_namespace.startsWith(path))) ||
-              (includeGroups[0] !== '' && includeGroups.some((group) => group === project.namespace.name)) ||
-              (includeProjects[0] !== '' && includeProjects.some((group) => group === project.name_with_namespace))
-            );
+        this.$data.runners = runners.filter((runner) => {
+          return regex.test(runner.description)
         });
 
         if (getQueryParameter('autoZoom')) {
@@ -166,7 +128,7 @@
 
 <style lang="scss" scoped>
   .app {
-    .projects {
+    .runners {
       display: flex;
       flex-wrap: wrap;
       justify-content: left;
