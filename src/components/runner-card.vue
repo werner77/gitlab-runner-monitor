@@ -64,7 +64,7 @@
       async fetchRunnerJobs() {
         this.$data.loading = true;
 
-        const allJobs = await this.$api(`/runners/${this.$props.runner.id}/jobs`);
+        const allJobs = await this.$api(`/runners/${this.$props.runner.id}/jobs`, {per_page: 1}, {get_last_page: true});
 
         const sortedJobs = allJobs.sort(function(a,b) {
           const d1 = new Date(a.started_at);
@@ -72,7 +72,7 @@
           return d2.getTime() - d1.getTime();
         });
 
-        this.$data.jobs = [sortedJobs[0]]
+        this.$data.jobs = sortedJobs.slice(0, 1)
         this.$data.loading = false;
         this.$data.lastUpdated = format(new Date());
       }

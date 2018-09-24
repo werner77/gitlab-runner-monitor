@@ -1,22 +1,22 @@
 <template>
   <div :class="['runner-job-view', job.status]">
 
-    <div class="project">
+    <a class="project" target="_blank" rel="noopener noreferrer" :href="projectWebUrl">
       {{ job.project.name_with_namespace }}
-    </div>
+    </a>
     <a class="branch" target="_blank" rel="noopener noreferrer" :href="projectWebUrl + '/tree/' + job.ref">
       <octicon name="git-branch" scale="0.9" />
       {{ job.ref }}
     </a>
     <div class="commit">
-      <div class="hash">
+      <a class="hash" target="_blank" rel="noopener noreferrer" :href="projectWebUrl + '/commit/' + job.commit.id">
         {{ job.commit.short_id }}
-      </div>
+      </a>
       <div class="title">
         {{ job.commit.title }}
       </div>
       <gitlab-icon class="user-icon" name="user" size="10" />
-      <span class="user">{{ job.user.name }}</span>
+      <a class="user-name" :href="'mailto:' + job.commit.author_email">{{ job.commit.author_name }}</a>
     </div>
     <div class="job">
       <a class="pipeline-id-link" target="_blank" rel="noopener noreferrer" :href="projectWebUrl + '/pipelines/' + job.pipeline.id">
@@ -34,12 +34,8 @@
         <div class="pipe"></div>
       </a>
 
-      <!--<div class="stage-name">-->
-        <!--{{ job.stage }}-->
-      <!--</div>-->
-      <!--<div class="job-start-date">-->
-        <!--{{ job.started_at }}-->
-      <!--</div>-->
+      <gitlab-icon class="clock-icon" name="clock" size="10" />
+      <span class="start-date">{{ startDateString }}</span>
       <gitlab-icon class="clock-icon" name="clock" size="10" />
       <span class="duration">{{ durationString }}</span>
     </div>
@@ -85,6 +81,11 @@
         timeString += secs;
 
         return timeString;
+      },
+      startDateString() {
+        const job = this.$props.job;
+        const date = new Date(job.started_at)
+        return date.toLocaleString()
       },
       projectWebUrl() {
         const job = this.$props.job;
@@ -134,7 +135,10 @@
 
     border: 2px solid rgba(255, 255, 255, 0.8);
     border-radius: 24px;
-    padding: 15px 15px 15px 15px;
+    padding-top: 12px;
+    padding-right: 15px;
+    padding-left: 15px;
+    padding-bottom: 12px;
 
     &:not(:last-child) {
       margin-bottom: 4px;
@@ -164,6 +168,11 @@
       background-color: #4b4b4b;
     }
 
+    .project {
+      text-decoration: none;
+      color: white;
+    }
+
     .branch {
       color: rgba(255, 255, 255, 0.5);
       display: flex;
@@ -181,16 +190,19 @@
       font-size: 12px;
       display: flex;
       align-items: center;
-      padding: 0 0 2px 0;
-      text-decoration: none;
+      padding-top: 2px;
+      padding-right: 0;
+      padding-left: 0;
+      padding-bottom: 6px;
 
       .hash {
-
+        text-decoration: none;
+        color: white;
       }
 
       .title {
-        margin-right: 3px;
-        margin-left: 3px;
+        margin-right: 5px;
+        margin-left: 5px;
       }
 
       .user-icon {
@@ -199,12 +211,14 @@
       }
 
       .user-name {
-        color: rgba(255, 255, 255, 0.8);
+        color: white;
         line-height: 1;
+        text-decoration: none;
       }
     }
 
     .job {
+      font-size: 14px;
       display: flex;
       align-items: center;
       color: white;
@@ -236,6 +250,7 @@
         display: inline-flex;
         align-items: center;
         text-decoration: none;
+        font-size: 12px;
         color: white;
 
         &:last-child {
@@ -271,6 +286,13 @@
       }
 
       .duration {
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1;
+        font-size: 14px;
+        margin-right: 6px;
+      }
+
+      .start-date {
         color: rgba(255, 255, 255, 0.8);
         line-height: 1;
         font-size: 14px;
