@@ -1,33 +1,12 @@
-# GitLab Monitor
+# GitLab Runner Monitor
 
 ![Logo](/logo.svg)
 
-> A browser-based monitor dashboard for GitLab CI
+> A browser-based monitor dashboard for GitLab CI Runners based on a fork of https://github.com/timoschwarzer/gitlab-monitor
+
+This dashboard shows the last jobs that have been running
 
 ## Use & Download
-
-### Hosted version
-
-If you don't want to setup your own server, you can always
-use the latest version of GitLab Monitor I upload here:
-
-<https://timoschwarzer.com/gitlab-monitor>
-
-Don't worry, I don't save access tokens or anything else.
-Additionally, this version has a manifest.json attached which
-makes it easy to pin it to your Android home screen and open
-it as a full screen app.
-
-### Docker
-
-There's an official docker image available on [Dockerhub](https://hub.docker.com/r/timoschwarzer/gitlab-monitor/):
-```
-docker pull timoschwarzer/gitlab-monitor
-```
-
-### Host it yourself
-
-[Go to releases](https://github.com/timoschwarzer/gitlab-monitor/releases)
 
 ## Screenshots
 
@@ -59,24 +38,9 @@ Name                            | Description
 --------------------------------|--------------------------------------------
 `gitlabApi` (required)          | URL to your GitLab API. (e.g. `https://gitlab.example.com/api/v4`)
 `privateToken` (required)       | Private token to access the GitLab API
-`maxAge`                        | In hours. Projects with last activity older than this age won't be displayed. If set to 0, no filter will be applied. Default: 168 (i.e. 7 days)
-`fetchCount`                    | How many projects will be fetched from GitLab. If set to greater than 100, then all available projects will be retrieved (in batches of 100). Default: 20
-`pipelinesOnly`                 | Show only projects with recent pipelines. Default: `false`
 `autoZoom`                      | Zooms the dashboard to fill the screen with all displayed projects. [Not compatible](https://caniuse.com/#feat=css-zoom) with all browsers! Default: `false`
-`showPipelineIds`               | Don't show pipeline IDs. Default: `true`
-`showJobNames`                  | Show job names instead of status icons. Default: `false`
-`showDurations`                 | Show pipeline durations. Default: `true`
-`showUsers`                     | Show user that invoked a pipeline. Default: `false`
-`projectVisibility`             | Limit projects by visibility. Default: `any`, Can be: `any`, `public`, `internal` or `private`
-`groups`                        | List of project groups that are included. Multiple groups can be provided comma-separated or in multiple `groups` values.
-`projects`                      | List of projects that are included. Multiple projects can be provided comma-separated or in multiple `projects` values.
-`paths`                         | List of project paths that are included. Multiple paths can be provided comma-separated or in multiple `paths` values.
-
-Note that `groups`, `projects` and `paths` are combined together if more then one are provided.
-
-## Minimal example
-
-`http://gitlab-monitor.local/?gitlabApi=https://gitlab.example.com/api/v4&privateToken=ABCDEF1234ABCDEF`
+`descriptionRegex`              | Regular expression for the description of the GitLab runners to show. If not specified all GitLab runners will be shown. If descriptionList is also supplied, any match of the two will be shown.
+`descriptionList`               | Comma separated string of descriptions of the GitLab runners to show.
 
 ## Used libraries
 
@@ -85,4 +49,3 @@ Note that `groups`, `projects` and `paths` are combined together if more then on
 - [vue-octicon](https://github.com/Justineo/vue-octicon)
 - [GitLab SVG icons](https://gitlab.com/gitlab-org/gitlab-svgs)
 
-### Visit my [website](https://timoschwarzer.com)!
