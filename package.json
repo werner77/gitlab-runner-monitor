@@ -1,5 +1,5 @@
 {
-  "name": "gitlab-monitor",
+  "name": "gitlab-runner-monitor",
   "description": "A browser-based monitor dashboard for GitLab CI Runners",
   "version": "1.0.0",
   "author": "Timo Schwarzer <me@timoschwarzer.com>",
