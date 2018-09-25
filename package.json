@@ -1,12 +1,12 @@
 {
   "name": "gitlab-monitor",
-  "description": "A browser-based monitor dashboard for GitLab CI",
+  "description": "A browser-based monitor dashboard for GitLab CI Runners",
   "version": "1.0.0",
   "author": "Timo Schwarzer <me@timoschwarzer.com>",
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --mode development --port 8080 --hot  --host 172.25.4.67 --disableHostCheck",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --mode development --port 8080 --hot  --host 0.0.0.0 --disableHostCheck",
     "build": "cross-env NODE_ENV=production webpack -p --progress --hide-modules"
   },
   "dependencies": {

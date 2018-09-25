@@ -47,14 +47,12 @@
   import Octicon             from 'vue-octicon/components/Octicon';
   import {getQueryParameter} from '../util';
   import GitlabIcon          from './gitlab-icon';
-  import JobView             from './job-view';
   import 'vue-octicon/icons/sync';
 
   export default {
     components: {
       GitlabIcon,
       Octicon,
-      JobView
     },
     name: 'runner-job-view',
     props: ['runner', 'job'],
@@ -98,6 +96,9 @@
       this.setupDurationCounter();
     },
     watch: {
+      job() {
+        this.setupDurationCounter();
+      }
     },
     methods: {
       setupDurationCounter() {

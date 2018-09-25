@@ -12,7 +12,6 @@ GitLabApi.install = (Vue, options) => {
     }
 
     while (true) {
-      console.log('api params: ', apiParams);
       const response = await axios.get(path, apiParams);
       const result = response.data;
       if (behaviour.get_last_page) {

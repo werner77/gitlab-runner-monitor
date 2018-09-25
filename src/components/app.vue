@@ -25,7 +25,8 @@
     data: () => ({
       runners: [],
       zoom: 1,
-      initialLoading: true
+      initialLoading: true,
+      loading: false
     }),
     computed: {
       sortedRunners() {
@@ -38,40 +39,67 @@
     },
     mounted() {
       this.fetchRunners();
-
-      if (getQueryParameter('autoZoom')) {
-        setInterval(() => {
-          this.autoZoom();
-        }, 5000);
-      }
-
-      this.refreshIntervalId = setInterval(async () => {
-        if (!this.$data.loading) {
-          await this.fetchRunners();
-        }
-      }, 10000);
     },
     beforeDestroy() {
-      clearInterval(this.refreshIntervalId);
+      if (this.refreshTimerId) {
+        clearTimeout(this.refreshTimerId);
+      }
     },
     methods: {
       async fetchRunners() {
-        const gitlabApiParams = {
-          per_page: 100
-        };
 
-        const runners = await this.$api('/runners', gitlabApiParams, {follow_next_page_links: true});
-        const regex = /ios-[0-9]+\.[0-9]/
+        if (this.refreshTimerId) {
+          clearTimeout(this.refreshTimerId);
+        }
 
-        this.$data.runners = runners.filter((runner) => {
-          return regex.test(runner.description)
-        });
+        this.$data.loading = true
 
-        if (getQueryParameter('autoZoom')) {
-          this.$nextTick(() => this.autoZoom());
+        try {
+
+          const gitlabApiParams = {
+            per_page: 100
+          };
+
+          const runners = await this.$api('/runners', gitlabApiParams, {follow_next_page_links: true});
+
+          const descriptionRegex = getQueryParameter('descriptionRegex');
+          const descriptionsString = getQueryParameter('descriptionList');
+          var regex = null;
+          var descriptions = null;
+
+          if (descriptionRegex) {
+            regex = new RegExp(descriptionRegex);
+          }
+          if (descriptionsString) {
+            descriptions = descriptionsString.split(',');
+          }
+
+          this.$data.runners = runners.filter((runner) => {
+            var matches = regex === null && descriptions === null;
+            if (regex) {
+              matches = matches || regex.test(runner.description);
+            }
+            if (descriptions) {
+              matches = matches || descriptions.includes(runner.description);
+            }
+            return matches;
+          });
+
+          if (getQueryParameter('autoZoom')) {
+            this.$nextTick(() => this.autoZoom());
+          }
+
+        } catch(err) {
+          console.log("Could not get runners: ", err);
         }
 
         this.$data.initialLoading = false;
+        this.$data.loading = false;
+
+        this.refreshTimerId = setTimeout(async () => {
+          await this.fetchRunners();
+        }, 120000);
+
       },
       async autoZoom() {
         let step = 0.1;

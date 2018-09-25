@@ -16,6 +16,11 @@
     </div>
     <div class="spacer"></div>
     <div class="info">
+      <div v-for="job in lastJobs">
+        <a target="_blank" rel="noopener noreferrer" :href="baseUrl + '/' + job.project.path_with_namespace + '/-/jobs/' + job.id">
+          <span :class="['dot', job.status]"></span>
+        </a>
+      </div>
       <div class="spacer"></div>
       <gitlab-icon class="calendar-icon" name="calendar" size="12" />
       <timeago v-if="lastUpdated !== null" :since="lastUpdated" :auto-update="1"></timeago>
@@ -43,38 +48,69 @@
     name: 'runner-card',
     props: ['runner'],
     data: () => ({
+      runnerId: null,
+      lastJobs: null,
       jobs: null,
       loading: false,
       lastUpdated: null
     }),
     computed: {
-
+      baseUrl() {
+        const job = this.$props.job;
+        const apiUrl = getQueryParameter('gitlabApi');
+        const index = apiUrl.indexOf('/api/');
+        return apiUrl.substring(0, index);
+      }
     },
     mounted() {
       this.fetchRunnerJobs();
     },
     beforeDestroy() {
+      if (this.refreshTimerId) {
+        clearTimeout(this.refreshTimerId);
+      }
     },
     watch: {
       runner() {
-        this.fetchRunnerJobs();
+        if (this.$data.runnerId !== this.$props.runner.id) {
+          this.$data.runnerId = this.$props.runner.id;
+          this.fetchRunnerJobs();
+        }
       }
     },
     methods: {
       async fetchRunnerJobs() {
+
+        if (this.refreshTimerId) {
+          clearTimeout(this.refreshTimerId);
+        }
+
+        const runnerId = this.$props.runner.id
         this.$data.loading = true;
 
-        const allJobs = await this.$api(`/runners/${this.$props.runner.id}/jobs`, {per_page: 1}, {get_last_page: true});
+        try {
+          const allJobs = await this.$api(`/runners/${runnerId}/jobs`, {per_page: 20}, {get_last_page: true});
 
-        const sortedJobs = allJobs.sort(function(a,b) {
-          const d1 = new Date(a.started_at);
-          const d2 = new Date(b.started_at);
-          return d2.getTime() - d1.getTime();
-        });
+          if (runnerId === this.$props.runner.id) {
+            const sortedJobs = allJobs.sort(function(a,b) {
+              const d1 = new Date(a.started_at);
+              const d2 = new Date(b.started_at);
+              return d2.getTime() - d1.getTime();
+            });
 
-        this.$data.jobs = sortedJobs.slice(0, 1)
+            this.$data.lastJobs = sortedJobs.slice(1, Math.min(10, sortedJobs.length));
+            this.$data.jobs = sortedJobs.slice(0, 1);
+            this.$data.lastUpdated = format(new Date());
+          }
+        } catch (err) {
+          console.log("Could not retrieve runner jobs: ", err);
+        }
+
         this.$data.loading = false;
-        this.$data.lastUpdated = format(new Date());
+
+        this.refreshTimerId = setTimeout(async () => {
+          await this.fetchRunnerJobs();
+        }, 10000);
       }
     }
   };
@@ -151,6 +187,41 @@
 
       .calendar-icon {
         margin-right: 4px;
+      }
+
+      .dot {
+        height: 10px;
+        width: 10px;
+        border-radius: 50%;
+        border-color: white;
+        border-width: 2px;
+        display: inline-block;
+        margin-right: 5px;
+        border-style: solid;
+
+        &.success {
+          background-color: #2E7D32;
+        }
+
+        &.running {
+          background-color: #1565C0;
+        }
+
+        &.pending, &.warning {
+          background-color: #EF6C00;
+        }
+
+        &.failed {
+          background-color: #C62828;
+        }
+
+        &.canceled {
+          background-color: #010101;
+        }
+
+        &.skipped, &.manual {
+          background-color: #4b4b4b;
+        }
       }
     }
   }
