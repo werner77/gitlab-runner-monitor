@@ -54,7 +54,7 @@ yarn run build
 `
 
 - Copy the dist folder to a HTTP server of your choice with some defined hostname
-- Navigate with browser to http://hostname/?gitlabApi=<gitlab api>&privateToken=<gitlab token>&additionalParams...
+- Navigate with browser to http://hostname/?gitlabApi=GITLAB_URL&privateToken=GITLAB_TOKEN&additionalParams...
 
 See parameters below for details.
 
